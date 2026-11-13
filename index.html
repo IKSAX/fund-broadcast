@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>重点基金净值播报</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="title-wrap">
+        <h1>📣 重点基金净值播报</h1>
+        <span id="dataDate" class="data-date">加载中…</span>
+      </div>
+      <div class="actions">
+        <button id="btnCopyAll" class="btn btn-primary" disabled>📋 一键复制全部</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hotbar">
+    <label for="hotTopic">💡 今日热点（可选，嵌入话术）：</label>
+    <input type="text" id="hotTopic" placeholder="例如：黄金调整 / CPI数据 / 降准落地" maxlength="30">
+  </section>
+
+  <main>
+    <div id="fundGrid" class="fund-grid">
+      <div class="loading">正在加载基金数据…</div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast">已复制</div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+/* ============ 基础 ============ */
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --text: #1f2329;
+  --text-sub: #86909c;
+  --line: #e5e6eb;
+  --up: #e02e2a;       /* A股习惯：红涨 */
+  --down: #00a854;     /* 绿跌 */
+  --flat: #86909c;
+  --primary: #2f5cff;
+  --warn-bg: #fff7e6;
+  --warn-border: #f7ba1e;
+  --warn-text: #a86a00;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ============ 顶部 ============ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.title-wrap { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h1 { font-size: 20px; }
+.data-date { font-size: 13px; color: var(--text-sub); }
+.actions { display: flex; gap: 10px; }
+
+/* ============ 按钮 ============ */
+.btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn:hover { border-color: var(--primary); color: var(--primary); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { opacity: .88; color: #fff; }
+.btn-mini { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+
+/* ============ 热点输入 ============ */
+.hotbar {
+  max-width: 1200px;
+  margin: 14px auto 0;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hotbar label { font-size: 14px; color: var(--text-sub); white-space: nowrap; }
+.hotbar input {
+  flex: 1;
+  min-width: 220px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+.hotbar input:focus { border-color: var(--primary); }
+
+/* ============ 卡片网格 ============ */
+main { max-width: 1200px; margin: 0 auto; padding: 16px 20px 40px; }
+.fund-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.loading { grid-column: 1 / -1; text-align: center; color: var(--text-sub); padding: 60px 0; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.fund-name { font-size: 15px; font-weight: 600; }
+.fund-code { font-size: 12px; color: var(--text-sub); }
+.date-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #f2f3f5;
+  color: var(--text-sub);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.date-chip.stale {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  color: var(--warn-text);
+}
+
+/* 净值主行 */
+.nav-row { display: flex; align-items: baseline; gap: 12px; }
+.nav-value { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.nav-change { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* 区间涨跌 */
+.period-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.period-cell { text-align: center; padding: 6px 0; background: #f7f8fa; border-radius: 8px; }
+.period-label { font-size: 11px; color: var(--text-sub); }
+.period-value { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* 回撤 */
+.dd-row { font-size: 12px; color: var(--text-sub); }
+.dd-row .dd-value { font-weight: 600; }
+.dd-note { cursor: help; border-bottom: 1px dotted var(--text-sub); }
+
+/* 话术 */
+.script-box {
+  background: #f7f8fa;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text);
+}
+.script-box .script-text { margin-bottom: 8px; white-space: pre-wrap; }
+.card-foot { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ============ 涨跌色（红涨绿跌，全站统一） ============ */
+.c-up { color: var(--up); }
+.c-down { color: var(--down); }
+.c-flat { color: var(--flat); }
+
+/* ============ Toast ============ */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(31, 35, 41, .9);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all .25s;
+  z-index: 99;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 640px) {
+  .topbar-inner { padding: 12px 14px; }
+  main { padding: 12px 14px 30px; }
+  .fund-grid { grid-template-columns: 1fr; }
+  h1 { font-size: 17px; }
+}
