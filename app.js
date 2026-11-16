@@ -80,9 +80,12 @@ function fundBroadcast(fund, marketBrief, dateKey) {
     `📊近6个月最大回撤仅约${dd}%`,
   ];
   if (fund.investDesc) lines.push(`🎯投向：${fund.investDesc}`);
+  lines.push("");
   lines.push(`🗣️理财经理话术：\n${genManagerScript(fund, marketBrief)}`);
+  lines.push("");
   if (fund.feeDesc) lines.push(`💡${fund.feeDesc}`);
   if (fund.lockupDesc) lines.push(`⏳${fund.lockupDesc}`);
+  lines.push("");
   lines.push(`⚠️风险提示：${fund.riskNote || "本基金受利率及信用风险影响，基金净值仍会有波动，不保证本金不受损失。市场有风险，投资须谨慎。"}`);
   return lines.join("\n");
 }
