@@ -48,8 +48,8 @@ function hashStr(s) {
   return h;
 }
 
-/* ---------- 理财经理话术（对齐用户群发模板：短名 + 近6月回撤 + 持有期 + 业绩 + 鼓励买入） ---------- */
-function genManagerScript(fund, hotTopic, dateKey) {
+/* ---------- 理财经理话术（对齐用户群发模板：市场速览开头 + 短名 + 近6月回撤 + 持有期 + 业绩 + 鼓励买入） ---------- */
+function genManagerScript(fund, marketBrief) {
   const short = fund.shortName || fund.name;
   const dd6 = Math.abs(fund.maxDrawdown6m ?? fund.maxDrawdown1y ?? 0).toFixed(2);
   const lockup = fund.scriptLockup || fund.lockupDesc || "申赎安排请以基金公告为准。";
@@ -58,13 +58,13 @@ function genManagerScript(fund, hotTopic, dateKey) {
   const perf = fund.rankNote
     ? `近1年涨幅${y1}%，${fund.rankNote}，在纯债里表现是比较靠前的。`
     : `近1年涨幅${y1}%，稳健属性在纯债里比较突出。`;
-  const hot = hotTopic ? `结合近期债市（${hotTopic}）来看，` : "";
+  const hot = marketBrief ? `${marketBrief}` : "";
 
-  return `XXX，如果您有一笔钱短期不用，又觉得放活期或买理财收益太薄，可以看看这只${short}。${invest}近6个月最大回撤才${dd6}%左右，净值走势非常平稳。${lockup}${perf}${hot}有短期不用的闲钱，可以考虑把它安排起来。`;
+  return `${hot}XXX，如果您有一笔钱短期不用，又觉得放活期或买理财收益太薄，可以看看这只${short}。${invest}近6个月最大回撤才${dd6}%左右，净值走势非常平稳。${lockup}${perf}有短期不用的闲钱，可以考虑把它安排起来。`;
 }
 
 /* ---------- 播报文本（与理财经理现有群发格式一致） ---------- */
-function fundBroadcast(fund, hotTopic, dateKey) {
+function fundBroadcast(fund, marketBrief, dateKey) {
   const d = fund.dailyChange ?? 0;
   const sign = fmtSign(d);
   const chg = (d > 0 ? "+" : "") + d.toFixed(2) + "%";
@@ -80,7 +80,7 @@ function fundBroadcast(fund, hotTopic, dateKey) {
     `📊近1年最大回撤仅约${dd}%`,
   ];
   if (fund.investDesc) lines.push(`🎯投向：${fund.investDesc}`);
-  lines.push(`🗣️理财经理话术：\n${genManagerScript(fund, hotTopic, dateKey)}`);
+  lines.push(`🗣️理财经理话术：\n${genManagerScript(fund, marketBrief)}`);
   if (fund.feeDesc) lines.push(`💡${fund.feeDesc}`);
   if (fund.lockupDesc) lines.push(`⏳${fund.lockupDesc}`);
   lines.push(`⚠️风险提示：${fund.riskNote || "本基金受利率及信用风险影响，基金净值仍会有波动，不保证本金不受损失。市场有风险，投资须谨慎。"}`);
@@ -99,7 +99,7 @@ let DATA = null;
 
 function render() {
   const grid = $("#fundGrid");
-  const hotTopic = $("#hotTopic").value.trim();
+  const marketBrief = DATA.marketBrief || "";
   const dateKey = DATA.generatedAt.slice(0, 10);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -157,14 +157,14 @@ function render() {
         <span style="color:var(--text-sub)">（峰值→谷值：${fund.ddRange || "—"}）</span>
       </div>
       <div class="script-box">
-        <div class="script-text">${genManagerScript(fund, hotTopic, dateKey)}</div>
+        <div class="script-text">${genManagerScript(fund, marketBrief)}</div>
       </div>
       <div class="card-foot">
         <button class="btn btn-mini btn-copy-one">📋 复制该基金播报</button>
       </div>
     `;
     card.querySelector(".btn-copy-one").addEventListener("click", async () => {
-      const ok = await copyText(fundBroadcast(fund, hotTopic, dateKey));
+      const ok = await copyText(fundBroadcast(fund, marketBrief, dateKey));
       showToast(ok ? "已复制" : "复制失败，请手动选择文本");
     });
     grid.appendChild(card);
@@ -190,19 +190,17 @@ async function init() {
   }
 
   $("#dataDate").textContent = `数据更新于 ${DATA.generatedAt}`;
+  if (DATA.marketBrief) $("#marketNews").textContent = `📰 ${DATA.marketBrief}`;
   $("#btnCopyAll").disabled = false;
 
   $("#btnCopyAll").addEventListener("click", async () => {
-    const hotTopic = $("#hotTopic").value.trim();
+    const marketBrief = DATA.marketBrief || "";
     const dateKey = DATA.generatedAt.slice(0, 10);
     const head = `📣 重点基金净值播报（${DATA.generatedAt.slice(5, 10).replace("-", ".")}）`;
-    const body = DATA.funds.map((f) => fundBroadcast(f, hotTopic, dateKey)).join("\n\n");
+    const body = DATA.funds.map((f) => fundBroadcast(f, marketBrief, dateKey)).join("\n\n");
     const ok = await copyText(head + "\n\n" + body + "\n");
     showToast(ok ? "已复制全部播报" : "复制失败，请手动选择文本");
   });
-
-  // 热点输入变化 → 重新渲染话术
-  $("#hotTopic").addEventListener("input", render);
 
   render();
 }

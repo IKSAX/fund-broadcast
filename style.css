@@ -87,6 +87,16 @@ h1 { font-size: 20px; }
   outline: none;
 }
 .hotbar input:focus { border-color: var(--primary); }
+.market-news {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-sub);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  line-height: 1.5;
+}
 
 /* ============ 卡片网格 ============ */
 main { max-width: 1200px; margin: 0 auto; padding: 16px 20px 40px; }

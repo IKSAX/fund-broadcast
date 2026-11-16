@@ -95,6 +95,61 @@ def ts_to_date(ts_ms: int) -> str:
     return datetime.fromtimestamp(ts_ms / 1000, TZ).strftime("%Y-%m-%d")
 
 
+# 关键词分两级：优先选中国市场的新闻，找不到再放宽
+BOND_KEYWORDS_1 = ["债市", "国债", "逆回购", "央行", "LPR", "MLF", "降准", "公开市场", "信用债", "国债收益率", "国债期货"]
+BOND_KEYWORDS_2 = ["债券", "利率", "收益率"]
+STOCK_KEYWORDS_1 = ["沪指", "A股", "创业板指", "深证成指", "沪深300", "两市", "涨停", "板块"]
+STOCK_KEYWORDS_2 = ["股市", "创业板", "个股", "券商", "指数", "资金"]
+# 海外市场新闻对国内零售客户参考意义弱，排除（除非命中中国一级关键词）
+FOREIGN_BLOCKLIST = ["日本", "美国", "美联储", "美股", "美债", "日元", "美元", "特朗普", "伯克希尔", "纳斯达克", "道琼斯", "标普", "比特币", "港股", "欧洲"]
+
+COLUMN_STOCK = 104  # 东方财富快讯：股市栏目
+COLUMN_BOND = 108   # 东方财富快讯：债市栏目
+
+
+def _fetch_column(col: int) -> list:
+    url = ("https://np-listapi.eastmoney.com/comm/web/getFastNewsList"
+           f"?client=web&biz=web_724&fastColumn={col}&sortEnd=&pageSize=30"
+           f"&req_trace={int(time.time() * 1000)}")
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Referer": "https://kuaixun.eastmoney.com/"})
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        return json.load(resp)["data"]["fastNewsList"]
+
+
+def _pick_news(items, kw_tiers):
+    for kw in kw_tiers:
+        for it in items:
+            title = (it.get("title") or it.get("summary") or "").strip()
+            text = title + (it.get("summary") or "")
+            hit = any(k in text for k in kw)
+            if hit and kw is kw_tiers[0] and any(b in text for b in FOREIGN_BLOCKLIST):
+                continue  # 一级关键词也要排除海外新闻
+            if hit:
+                return title
+    return None
+
+
+def fetch_market_news() -> dict:
+    """抓取东方财富 7x24 快讯，各挑一条股市/债市相关新闻，拼成一句话速览。
+    失败时返回中性兜底文案，不影响净值数据生成。"""
+    fallback = {"stock": None, "bond": None, "brief": "今日市场消息面整体平稳"}
+    try:
+        stock = _pick_news(_fetch_column(COLUMN_STOCK), [STOCK_KEYWORDS_1, STOCK_KEYWORDS_2])
+        bond = _pick_news(_fetch_column(COLUMN_BOND), [BOND_KEYWORDS_1, BOND_KEYWORDS_2])
+
+        def clean(t, limit=50):
+            t = re.sub(r"^【(.+?)】", r"\1：", t)  # 保留【】内主题，冒号衔接
+            return t if len(t) <= limit else t[:limit] + "……"
+
+        stock_s = clean(stock) if stock else "消息面相对平静"
+        bond_s = clean(bond) if bond else "整体运行平稳"
+        brief = f"今日市场速览：股市{stock_s}；债市{bond_s}。"
+        return {"stock": stock, "bond": bond, "brief": brief}
+    except Exception as e:
+        print(f"  新闻抓取失败，使用兜底文案：{e}", file=sys.stderr)
+        return fallback
+
+
 def main():
     with open(FUND_FILE, encoding="utf-8") as f:
         fund_list = json.load(f)["funds"]
@@ -151,8 +206,11 @@ def main():
         })
         time.sleep(1)  # 温和限速
 
+    news = fetch_market_news()
     out = {
         "generatedAt": datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S"),
+        "marketNews": {"stock": news["stock"], "bond": news["bond"]},
+        "marketBrief": news["brief"],
         "funds": results,
     }
     with open(OUT_FILE, "w", encoding="utf-8") as f:
