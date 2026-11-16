@@ -70,14 +70,14 @@ function fundBroadcast(fund, marketBrief, dateKey) {
   const chg = (d > 0 ? "+" : "") + d.toFixed(2) + "%";
   const emoji = sign === "up" ? "❤️" : sign === "down" ? "💚" : "⚖️";
   const mmdd = (fund.navDate || "").slice(5).replace("-", ".");
-  const dd = fmtPct(fund.maxDrawdown1y, { plain: true, trimZero: true });
+  const dd = fmtPct(fund.maxDrawdown6m ?? fund.maxDrawdown1y, { plain: true, trimZero: true });
 
   const lines = [
     `🔥${fund.name}（${fund.code}）—— ${fund.tagline || "稳健之选"}`,
     `💯 净值播报：${fund.nav}（${mmdd}）`,
-    `${emoji} 今日涨跌：${chg}`,
+    `${emoji} 当日涨跌：${chg}`,
     `💰近1月年化${fmtPct(fund.ann1m, { plain: true })}%；近3月年化${fmtPct(fund.ann3m, { plain: true })}%；近6月年化${fmtPct(fund.ann6m, { plain: true })}%`,
-    `📊近1年最大回撤仅约${dd}%`,
+    `📊近6个月最大回撤仅约${dd}%`,
   ];
   if (fund.investDesc) lines.push(`🎯投向：${fund.investDesc}`);
   lines.push(`🗣️理财经理话术：\n${genManagerScript(fund, marketBrief)}`);
