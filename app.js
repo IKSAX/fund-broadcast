@@ -183,10 +183,15 @@ async function init() {
     if (!res.ok) throw new Error("HTTP " + res.status);
     DATA = await res.json();
   } catch (e) {
-    $("#fundGrid").innerHTML =
-      `<div class="loading">数据加载失败（${e.message}）。<br>` +
-      `请确认 data.json 与页面在同一目录；或运行 <code>python3 fetch_data.py</code> 重新生成。</div>`;
-    return;
+    // file:// 直接双击打开时浏览器禁止 fetch 本地 json，降级读取 data.js 注入的数据
+    if (window.__FUND_DATA__) {
+      DATA = window.__FUND_DATA__;
+    } else {
+      $("#fundGrid").innerHTML =
+        `<div class="loading">数据加载失败（${e.message}）。<br>` +
+        `请确认 data.json 与 data.js 和页面在同一目录；或运行 <code>python3 fetch_data.py</code> 重新生成。</div>`;
+      return;
+    }
   }
 
   $("#dataDate").textContent = `数据更新于 ${DATA.generatedAt}`;

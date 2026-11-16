@@ -14,6 +14,7 @@
 """
 
 import json
+import os
 import re
 import sys
 import time
@@ -21,8 +22,10 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 TZ = timezone(timedelta(hours=8))  # 东八区
-FUND_FILE = "funds.json"
-OUT_FILE = "data.json"
+# 以脚本自身所在目录为基准定位文件，从任何位置运行都不会找不到 funds.json
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FUND_FILE = os.path.join(BASE_DIR, "funds.json")
+OUT_FILE = os.path.join(BASE_DIR, "data.json")
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
 
 
@@ -215,7 +218,14 @@ def main():
     }
     with open(OUT_FILE, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
-    print(f"\n完成：{len(results)}/{len(fund_list)} 只基金 -> {OUT_FILE}")
+    # 同时生成 data.js（window 变量形式）：file:// 直接双击打开 index.html 时，
+    # 浏览器禁止 fetch 本地 json，改由 <script src="data.js"> 注入数据
+    js_file = os.path.join(BASE_DIR, "data.js")
+    with open(js_file, "w", encoding="utf-8") as f:
+        f.write("window.__FUND_DATA__ = ")
+        json.dump(out, f, ensure_ascii=False, indent=2)
+        f.write(";\n")
+    print(f"\n完成：{len(results)}/{len(fund_list)} 只基金 -> {OUT_FILE}（+ data.js）")
 
 
 if __name__ == "__main__":
