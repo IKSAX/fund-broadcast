@@ -1,5 +1,5 @@
 window.__FUND_DATA__ = {
-  "generatedAt": "2026-11-18 05:40:27",
+  "generatedAt": "2026-11-18 06:46:00",
   "marketNews": {
     "stock": "中金公司：当前至12月A股有望迎来修复行情",
     "bond": "摩根士丹利对英国国债期货展期持温和看跌观点"
